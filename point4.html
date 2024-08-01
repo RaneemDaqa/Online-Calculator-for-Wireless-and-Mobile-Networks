@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Throughput Calculator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border: 2px solid #65c070;
+         }
+        h1 {
+          color: #333;
+          text-align: center;
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+        }
+        label {
+            margin-top: 10px;
+        }
+        input, select {
+            padding: 10px;
+            margin-top: 5px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+         button {
+            padding: 10px;
+            margin-top: 20px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #218838;
+        }
+        #result {
+            margin-top: 20px;
+            font-size: 18px;
+            font-weight: bold;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Throughput in Multiple Access Techniques</h1>
+        <form id="throughput-form">
+            <label for="calculation-type">Choose Throughput Calculation Type:</label>
+            <select id="calculation-type" required>
+                <option value="pure-aloha">Pure ALOHA</option>
+                <option value="slotted-aloha">Slotted ALOHA</option>
+                <option value="unslotted-nonpersistent-csma">Unslotted Nonpersistent CSMA</option>
+                <option value="slotted-nonpersistent-csma">Slotted Nonpersistent CSMA</option>
+                <option value="unslotted-1-persistent-csma">Unslotted 1-Persistent CSMA</option>
+                <option value="slotted-1-persistent-csma">Slotted 1-Persistent CSMA</option>
+            </select>
+
+            <label for="bandwidth">Data Transmission Bandwidth (Mbps):</label>
+            <input type="number" id="bandwidth" required>
+
+            <label for="propagation-time">Propagation Time (µsec):</label>
+            <input type="number" id="propagation-time" required>
+
+            <label for="frame-size">Frame Size (Kbits):</label>
+            <input type="number" id="frame-size" required>
+
+            <label for="frame-rate">Frame Rate (Kfps):</label>
+            <input type="number" id="frame-rate" required>
+
+            <button type="submit">Calculate Throughput</button>
+        </form>
+        <p id="result"></p>
+    </div>
+    <script>
+        function calculateThroughput() {
+            const calculationType = document.getElementById('calculation-type').value;
+            const bandwidth = parseFloat(document.getElementById('bandwidth').value) * 1e6; // Convert Mbps to bps
+            const propagationTime = parseFloat(document.getElementById('propagation-time').value) * 1e-6; // Convert µsec to sec
+            const frameSize = parseFloat(document.getElementById('frame-size').value) * 1e3; // Convert Kbits to bits
+            const frameRate = parseFloat(document.getElementById('frame-rate').value) * 1e3; // Convert Kfps to fps
+    
+            const transmissionTime = frameSize / bandwidth; 
+            const G = frameRate * transmissionTime; 
+            const alpha = propagationTime / transmissionTime; 
+            const T = transmissionTime;
+    
+            let throughput;
+    
+            switch (calculationType) {
+                case 'pure-aloha':
+                    throughput = G * T * Math.exp(-2 * G * T);
+                    break;
+                case 'slotted-aloha':
+                    throughput = G * T * Math.exp(-G * T);
+                    break;
+                case 'unslotted-nonpersistent-csma':
+                    throughput = G * Math.exp(-2 * alpha * T) / (G * (1 + 2 * alpha) + Math.exp(-alpha * G));
+                    break;
+                case 'slotted-nonpersistent-csma':
+                    throughput = alpha * G * Math.exp(-2 * alpha * T) / (1 - Math.exp(-alpha * G) + alpha);
+                    break;
+                case 'unslotted-1-persistent-csma':
+                    throughput = (G * (1 + G + alpha * G * (1 + G + (alpha * G) / 2)) * Math.exp(-G * (1 + 2 * alpha))) / (G * (1 + 2 * alpha) - (1 - Math.exp(-alpha * G)) + (1 + alpha * G) * Math.exp(-G * (1 + alpha)));
+                    break;
+                case 'slotted-1-persistent-csma':
+                    throughput = (G * (1 + alpha - Math.exp(-alpha * G)) * Math.exp(-G * (1 + alpha))) / ((1 + alpha) * (1 - Math.exp(-alpha * G)) + alpha * Math.exp(-G * (1 + alpha)));
+                    break;
+                default:
+                    throughput = 0;
+            }
+    
+            throughput = throughput * 100; 
+            document.getElementById('result').innerText = `Throughput: ${throughput.toFixed(1)}%`;
+        }
+    
+        document.getElementById('throughput-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+            calculateThroughput();
+        });
+    </script>
+    
+</body>
+</html>

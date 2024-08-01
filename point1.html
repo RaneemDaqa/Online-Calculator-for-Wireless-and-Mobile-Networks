@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sampling, Quantization, and Encoding Calculator</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f4f4f4;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+      }
+      label {
+        font-weight: bold;
+      }
+      .container {
+        background-color: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        border: 2px solid #65c070;
+      }
+      .result {
+        font-size: 1.2em;
+        margin-top: 10px;
+      }
+      h1 {
+        color: #333;
+        text-align: center;
+      }
+      button {
+        padding: 10px;
+        margin-top: 20px;
+        background-color: #28a745;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        width: 100%;
+      }
+      button:hover {
+        background-color: #218838;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h2>Sampling, Quantization, and Encoding</h2>
+      <form id="samplingForm">
+        <label for="bandwidth">Band Width (HZ):</label>
+        <input type="number" id="bandwidth" min="1" required /><br /><br />
+
+        <label for="quantizationBits">Quantization Bits:</label>
+        <input type="number" id="quantizationBits" min="1" required /><br /><br />
+
+        <label for="sourceEncoderRate">Source Encoder Rate:</label>
+        <input type="number" id="sourceEncoderRate" min="0" step="0.01" required /><br /><br />
+
+        <label for="channelEncoderRate">Channel Encoder Rate:</label>
+        <input type="number" id="channelEncoderRate" min="0" step="0.01" required /><br /><br />
+
+        <label for="bitsInterleaver">Number of Bits Interleaver:</label>
+        <input type="number" id="bitsInterleaver" min="1" required /><br /><br />
+
+        <button type="button" onclick="calculateSampling()">Calculate</button>
+      </form>
+      <div class="result" id="samplingResult"></div>
+    </div>
+
+    <script>
+      function calculateSampling() {
+        const bandwidth = parseFloat(document.getElementById("bandwidth").value);
+        const quantizationBits = parseInt(document.getElementById("quantizationBits").value);
+        const sourceEncoderRate = parseFloat(document.getElementById("sourceEncoderRate").value);
+        const channelEncoderRate = parseFloat(document.getElementById("channelEncoderRate").value);
+        const bitsInterleaver = parseInt(document.getElementById("bitsInterleaver").value);
+        
+        if (!Number.isInteger(bitsInterleaver)) {
+          errorBitsPerQAM.textContent = "Error: The number of bits must be an integer.";
+          return;
+        }
+
+        const samplingFrequency = 2 * bandwidth;
+        const quantizationLevels = Math.pow(2, quantizationBits);
+        const sourceEncoderBitRate = samplingFrequency * quantizationBits * sourceEncoderRate;
+        const channelEncoderBitRate = sourceEncoderBitRate / channelEncoderRate;
+        const interleaverBitRate = channelEncoderBitRate;
+
+        document.getElementById("samplingResult").innerHTML = `
+          <p>Sampling Frequency: ${samplingFrequency.toFixed(2)} sampling/sec</p>
+          <p>Number of Quantization Levels: ${quantizationLevels} Levels</p>
+          <p>Bit Rate at Output of Source Encoder: ${sourceEncoderBitRate.toFixed(2)} bits/sec</p>
+          <p>Bit Rate at Output of Channel Encoder: ${channelEncoderBitRate.toFixed(2)} bps</p>
+          <p>Bit Rate at Output of Interleaver: ${interleaverBitRate.toFixed(2)} bps</p>
+        `;
+      }
+    </script>
+  </body>
+</html>

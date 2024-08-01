@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Cellular System Calculations</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f4f4f4;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+      }
+      h1 {
+        color: #333;
+        text-align: center;
+      }
+      .container {
+        background-color: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        border: 2px solid #65c070;
+      }
+      #calculationForm {
+        border: 2px solid #65c070;
+        padding: 20px;
+        margin-bottom: 20px;
+        max-width: 500px;
+      }
+      button {
+        padding: 10px;
+        margin-top: 20px;
+        background-color: #28a745;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        width: 100%;
+      }
+      button:hover {
+        background-color: #218838;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Cellular System Design</h1>
+      <form id="calculationForm">
+        <label for="timeslotsPerCarrier">Number of Timeslots per Carrier:</label>
+        <input type="number" id="timeslotsPerCarrier" name="timeslotsPerCarrier" required /><br /><br />
+
+        <label for="totalArea">Total Area (m^2):</label>
+        <input type="number" id="totalArea" name="totalArea" required /><br /><br />
+
+        <label for="totalUsers">Total Users:</label>
+        <input type="number" id="totalUsers" name="totalUsers" required /><br /><br />
+
+        <label for="callsPerDay">Number of Calls per Day:</label>
+        <input type="number" id="callsPerDay" name="callsPerDay" required /><br /><br />
+
+        <label for="averageCallDuration">Average Call Duration (minutes):</label>
+        <input type="number" id="averageCallDuration" name="averageCallDuration" required /><br /><br />
+
+        <label for="probabilityOfBlocking">Probability of Blocking (%):</label>
+        <input type="number" id="probabilityOfBlocking" name="probabilityOfBlocking" required /><br /><br />
+
+        <label for="SIR">Signal-to-Interference Ratio (SIR):</label>
+        <input type="number" id="SIR" name="SIR" required />
+        <input type="checkbox" id="SIRdB" name="SIRdB" /> dB<br /><br />
+
+        <label for="referenceDistance">Reference Distance (meters):</label>
+        <input type="number" id="referenceDistance" name="referenceDistance" required /><br /><br />
+
+        <label for="powerMeasuredAtReferenceDistance">Power Measured at Reference Distance:</label>
+        <input type="number" id="powerMeasuredAtReferenceDistance" name="powerMeasuredAtReferenceDistance" required />
+        <input type="checkbox" id="powerdB" name="powerdB" /> dB<br /><br />
+
+        <label for="pathLoss">Path Loss Exponent:</label>
+        <input type="number" id="pathLoss" name="pathLoss" required /><br /><br />
+
+        <label for="reviserSensitivity">Receiver Sensitivity (Watt):</label>
+        <input type="number" id="reviserSensitivity" name="reviserSensitivity" required /><br /><br />
+
+        <button type="button" onclick="calculate()">Calculate</button>
+      </form>
+      <div id="results"></div>
+    </div>
+    <script>
+      const erlangBTable = [
+        [0.001, 0.002, 0.005, 0.01, 0.012, 0.013, 0.02, 0.031, 0.053, 0.075, 0.111, 0.176, 0.25, 0.402, 0.694],
+        [0.046, 0.065, 0.105, 0.153, 0.168, 0.176, 0.19, 0.223, 0.282, 0.381, 0.47, 0.695, 1.006, 1.743, 3.003],
+        [0.249, 0.338, 0.489, 0.506, 0.508, 0.515, 0.538, 0.593, 0.707, 0.889, 1.047, 1.571, 2.602, 4.239, 7.296]
+      ];
+
+      function findChannels(probability, traffic) {
+        let minDifference = Infinity;
+        let bestMatch = -1;
+
+        for (let i = 0; i < erlangBTable.length; i++) {
+          for (let j = 0; j < erlangBTable[i].length; j++) {
+            let difference = Math.abs(erlangBTable[i][j] - traffic);
+            if (difference < minDifference) {
+              minDifference = difference;
+              bestMatch = j;
+            }
+          }
+        }
+
+        return bestMatch;
+      }
+
+      function calculate() {
+        const timeslotsPerCarrier = parseFloat(document.getElementById("timeslotsPerCarrier").value);
+        const totalArea = parseFloat(document.getElementById("totalArea").value);
+        const totalUsers = parseFloat(document.getElementById("totalUsers").value);
+        const callsPerDay = parseFloat(document.getElementById("callsPerDay").value);
+        const averageCallDuration = parseFloat(document.getElementById("averageCallDuration").value);
+        const probabilityOfBlocking = parseFloat(document.getElementById("probabilityOfBlocking").value);
+        let SIR = parseFloat(document.getElementById("SIR").value);
+        const SIRdB = document.getElementById("SIRdB").checked;
+        const referenceDistance = parseFloat(document.getElementById("referenceDistance").value);
+        let powerMeasuredAtReferenceDistance = parseFloat(document.getElementById("powerMeasuredAtReferenceDistance").value);
+        const powerdB = document.getElementById("powerdB").checked;
+        const pathLoss = parseFloat(document.getElementById("pathLoss").value);
+        const reviserSensitivity = parseFloat(document.getElementById("reviserSensitivity").value);
+
+        if (SIRdB) {
+          SIR = Math.pow(10, SIR / 10);
+        }
+        if (powerdB) {
+          powerMeasuredAtReferenceDistance = Math.pow(10, powerMeasuredAtReferenceDistance / 10);
+        }
+
+        const maxDistance = referenceDistance * Math.pow(powerMeasuredAtReferenceDistance / reviserSensitivity, 1 / pathLoss);
+        const maxCellSize = ((3 * Math.sqrt(3)) / 2) * Math.pow(maxDistance, 2);
+        const numberOfCells = totalArea / maxCellSize;
+        const trafficLoadSystem = (callsPerDay * averageCallDuration * totalUsers) / (60 * 24); // Erlangs
+        const trafficLoadCell = trafficLoadSystem / numberOfCells;
+        const N = Math.ceil(Math.pow(SIR * 6, 2 / pathLoss) / 3);
+
+        const numberOfChannels = findChannels(probabilityOfBlocking, trafficLoadCell);
+        if (numberOfChannels === -1) {
+          document.getElementById("results").innerHTML = `<p>Invalid input: Please make sure the probability of blocking and traffic load are within valid ranges.</p>`;
+          return;
+        }
+        const minCarriersBlockingChange = Math.ceil(numberOfChannels / timeslotsPerCarrier) * N;
+        const minCarriers = Math.ceil(numberOfChannels / timeslotsPerCarrier) * N;
+
+        document.getElementById("results").innerHTML = `
+          <p>Maximum Distance for Reliable Communication: ${maxDistance.toFixed(1)} meters</p>
+          <p>Maximum Cell Size Assuming Hexagonal Cells: ${maxCellSize.toFixed(1)} m^2</p>
+          <p>Number of Cells in the Service Area: ${numberOfCells.toFixed(1)}</p>
+          <p>Traffic Load in the Whole Cellular System: ${trafficLoadSystem.toFixed(1)} Erlangs</p>
+          <p>Traffic Load per Cell: ${trafficLoadCell.toFixed(1)} Erlangs</p>
+          <p>Number of Cells in Each Cluster: ${N}</p>
+          <p>Number of Channels: ${numberOfChannels}</p>
+          <p>Minimum Number of Carriers Needed for QoS: ${minCarriers}</p>
+         <p>Minimum Number of Carriers Needed for QoS (Blocking Change): ${minCarriersBlockingChange}</p>
+`;
+}
+</script>
+
+  </body>
+</html>

@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>OFDM and Resource Allocation Calculator</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f4f4f4;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+      }
+      .container {
+        background-color: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        border: 2px solid #65c070;
+      }
+      h2 {
+        text-align: center;
+      }
+      label {
+        font-weight: bold;
+      }
+      button {
+        padding: 10px;
+        margin-top: 20px;
+        background-color: #28a745;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        width: 100%;
+      }
+      button:hover {
+        background-color: #218838;
+      }
+      .result {
+        font-size: 1.2em;
+        margin-top: 10px;
+      }
+      .error {
+        color: red;
+        font-size: 0.9em;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h2>OFDM and Resource Allocation</h2>
+      <form id="ofdmForm">
+        <label for="subcarrierSpacing">Subcarrier Spacing (Hz):</label>
+        <input
+          type="number"
+          id="subcarrierSpacing"
+          min="1"
+          required
+        /><br /><br />
+
+        <label for="duration">Duration (s):</label>
+        <input
+          type="number"
+          id="duration"
+          min="0.1"
+          step="0.1"
+          required
+        /><br /><br />
+
+        <label for="OFDMSymbols">Number of OFDM Symbols:</label>
+        <input type="number" id="OFDMSymbols" min="1" required /><br /><br />
+
+        <label for="transmissionBlocks"
+          >Number Of Parallel Resource Blocks:</label
+        >
+        <input
+          type="number"
+          id="transmissionBlocks"
+          min="1"
+          required
+        /><br /><br />
+
+        <label for="bandwidth">Bandwidth (Hz):</label>
+        <input type="number" id="bandwidth" min="1" required /><br /><br />
+
+        <label for="bitsPerQAM">Bits modulated using QAM:</label>
+        <input type="number" id="bitsPerQAM" min="1" required /><br />
+        <span id="errorBitsPerQAM" class="error"></span><br /><br />
+
+        <button type="button" onclick="calculateOFDM()">Calculate</button>
+      </form>
+      <div class="result" id="ofdmResult"></div>
+    </div>
+
+    <script>
+      function calculateOFDM() {
+        const subcarrierSpacing = parseInt(
+          document.getElementById("subcarrierSpacing").value
+        );
+        const duration = parseFloat(document.getElementById("duration").value);
+        const OFDMSymbols = parseInt(
+          document.getElementById("OFDMSymbols").value
+        );
+        const transmissionBlocks = parseInt(
+          document.getElementById("transmissionBlocks").value
+        );
+        const bandwidth = parseInt(document.getElementById("bandwidth").value);
+        const bitsPerQAM = parseFloat(
+          document.getElementById("bitsPerQAM").value
+        );
+
+        const errorBitsPerQAM = document.getElementById("errorBitsPerQAM");
+        const resultDiv = document.getElementById("ofdmResult");
+
+        errorBitsPerQAM.textContent = ""; 
+        resultDiv.innerHTML = ""; 
+
+        const bitsPerResourceElement = Math.log2(bitsPerQAM);
+        if (!Number.isInteger(bitsPerResourceElement)) {
+          errorBitsPerQAM.textContent =
+            "Error: The number of bits must be an integer.";
+          return;
+        }
+        const bitsPerOFDMSymbol =
+          bitsPerResourceElement * (bandwidth / subcarrierSpacing);
+        const bitsPerOFDMBlock = bitsPerOFDMSymbol * OFDMSymbols;
+        const maxTransmissionRate =
+          (bitsPerOFDMBlock * transmissionBlocks) / duration;
+
+        resultDiv.innerHTML = `
+                <p>Bits per Resource Element: ${bitsPerResourceElement.toFixed(
+                  1
+                )} bits</p>
+                <p>Bits per OFDM Symbol: ${bitsPerOFDMSymbol.toFixed(
+                  1
+                )} bits</p>
+                <p>Bits per OFDM Resource Block: ${bitsPerOFDMBlock.toFixed(
+                  1
+                )} bits/RB</p>
+                <p>Maximum Transmission Rate for ${transmissionBlocks} parallel resource blocks: ${maxTransmissionRate.toFixed(
+          1
+        )} bps</p>
+            `;
+      }
+    </script>
+  </body>
+</html>

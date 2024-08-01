@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Modulation Type BER Calculator</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f4f4f4;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+      .container {
+        background-color: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        border: 2px solid #65c070;
+      }
+     
+      h2 {
+        color: #333;
+        text-align: center;
+      }
+
+      label {
+        display: block;
+        margin-bottom: 5px;
+      }
+
+      input[type="number"] {
+        width: 100px;
+        padding: 5px;
+        margin-bottom: 10px;
+      }
+      .ModulationType {
+        border: 2px solid #65c070;
+        padding: 20px;
+      }
+      .TransmittedPower {
+        border: 2px solid #65c070;
+        padding: 20px;
+      }
+      select {
+        width: 150px;
+        padding: 5px;
+        margin-bottom: 10px;
+      }
+
+      button {
+        padding: 10px;
+        margin-top: 20px;
+        background-color: #28a745;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        width: 100%;
+      }
+      button:hover {
+        background-color: #218838;
+      }
+      p {
+        margin-top: 20px;
+      }
+    </style>
+    <body>
+      <div class="container">
+        <div class="ModulationType">
+          <h2>Modulation Type and BER to Eb/N0</h2>
+          <label for="modulationType">Modulation Type:</label>
+          <select id="modulationType">
+            <option value="BPSK/QPSK">BPSK/QPSK</option>
+            <option value="8-PSK">8-PSK</option>
+            <option value="16-PSK">16-PSK</option>
+          </select>
+          <br /><br />
+          <label for="ber">Bit Error Rate (BER):</label>
+          <input
+            type="number"
+            id="ber"
+            step="any"
+            placeholder="Enter BER as decimal"
+          />
+          <br /><br />
+          <button onclick="calculateEbN0()">Calculate Eb/N0</button>
+          <p id="result"></p>
+        </div>
+        <div class="TransmittedPower">
+          <h2>Transmitted Power</h2>
+          <form id="transmittedPowerForm">
+            <label for="temperature">Noise Temperature:</label>
+            <input type="number" id="temperature" value="24.62398" required />
+            <label for="temperatureUnit">
+              <input type="checkbox" id="temperatureUnit" checked /> dB
+            </label>
+            <br /><br />
+
+            <label for="bandwidth">Bandwidth:</label>
+            <input type="number" id="bandwidth" value="9600" />
+            <label for="bandwidthUnit">
+              <input type="checkbox" id="bandwidthUnit" checked /> dB
+            </label>
+            <br /><br />
+
+            <label for="noiseFigure">Noise Figure:</label>
+            <input type="number" id="noiseFigure" value="6" required />
+            <label for="noiseFigureUnit">
+              <input type="checkbox" id="noiseFigureUnit" checked /> dB
+            </label>
+            <br /><br />
+
+            <label for="dataRate">Data Rate:</label>
+            <input type="number" id="dataRate" value="39.8227" required />
+            <label for="dataRateUnit">
+              <input type="checkbox" id="dataRateUnit" checked /> dB
+            </label>
+            <br /><br />
+
+            <label for="ebn0">E<sub>b</sub>/N<sub>0</sub>:</label>
+            <input type="number" id="ebn0" value="10" required />
+            <label for="ebn0Unit">
+              <input type="checkbox" id="ebn0Unit" checked /> dB
+            </label>
+            <br /><br />
+
+            <label for="pathLoss">Path Loss:</label>
+            <input type="number" id="pathLoss" value="140" required />
+            <label for="pathLossUnit">
+              <input type="checkbox" id="pathLossUnit" checked /> dB
+            </label>
+            <br /><br />
+
+            <label for="antennaGainTx">Transmit Antenna Gain:</label>
+            <input type="number" id="antennaGainTx" value="8" required />
+            <label for="antennaGainTxUnit">
+              <input type="checkbox" id="antennaGainTxUnit" checked /> dB
+            </label>
+            <br /><br />
+
+            <label for="antennaGainRx">Receive Antenna Gain:</label>
+            <input type="number" id="antennaGainRx" value="0" required />
+            <label for="antennaGainRxUnit">
+              <input type="checkbox" id="antennaGainRxUnit" checked /> dB
+            </label>
+            <br /><br />
+
+            <label for="feedLineLoss">Feed Line Loss:</label>
+            <input type="number" id="feedLineLoss" value="12" required />
+            <label for="feedLineLossUnit">
+              <input type="checkbox" id="feedLineLossUnit" checked /> dB
+            </label>
+            <br /><br />
+
+            <label for="miscLosses">Miscellaneous Losses:</label>
+            <input type="number" id="miscLosses" value="20" required />
+            <label for="miscLossesUnit">
+              <input type="checkbox" id="miscLossesUnit" checked /> dB
+            </label>
+            <br /><br />
+
+            <label for="linkMargin">Link Margin:</label>
+            <input type="number" id="linkMargin" value="8" required />
+            <label for="linkMarginUnit">
+              <input type="checkbox" id="linkMarginUnit" checked /> dB
+            </label>
+            <br /><br />
+
+            <label for="amplifierR">Amplifier,R Gain:</label>
+            <input type="number" id="amplifierR" value="0" required />
+            <label for="amplifierRUnit">
+              <input type="checkbox" id="amplifierRUnit" checked /> dB
+            </label>
+            <br /><br />
+
+            <label for="amplifierT">Amplifier,T Gain:</label>
+            <input type="number" id="amplifierT" value="24" required />
+            <label for="amplifierTUnit">
+              <input type="checkbox" id="amplifierTUnit" checked /> dB
+            </label>
+            <br /><br />
+
+            <button type="button" onclick="calculateTransmittedPower()">
+              Calculate Transmitted Power
+            </button>
+          </form>
+          <p id="powerResult"></p>
+        </div>
+      </div>
+    </body>
+
+    <script>
+      function calculateEbN0() {
+        var BER = parseFloat(document.getElementById("ber").value);
+        var modulationType = document.getElementById("modulationType").value;
+        var EbN0 = 0;
+
+        var BER_BPSK = [0.1, 0.01, 0.001, 0.0001, 0.00001];
+        var EbN0_BPSK = [1, 3, 5, 7, 9];
+
+        var BER_8PSK = [0.1, 0.01, 0.001, 0.0001, 0.00001];
+        var EbN0_8PSK = [6, 8, 10, 12, 14];
+
+        var BER_16PSK = [0.1, 0.01, 0.001, 0.0001, 0.00001];
+        var EbN0_16PSK = [10, 12, 14, 16, 18];
+
+        var BER_Array, EbN0_Array;
+
+        if (modulationType === "BPSK/QPSK") {
+          BER_Array = BER_BPSK;
+          EbN0_Array = EbN0_BPSK;
+        } else if (modulationType === "8-PSK") {
+          BER_Array = BER_8PSK;
+          EbN0_Array = EbN0_8PSK;
+        } else if (modulationType === "16-PSK") {
+          BER_Array = BER_16PSK;
+          EbN0_Array = EbN0_16PSK;
+        } else {
+          alert("Unsupported modulation type.");
+          return;
+        }
+
+        // Perform linear interpolation
+        for (let i = 0; i < BER_Array.length - 1; i++) {
+          if (BER >= BER_Array[i + 1] && BER <= BER_Array[i]) {
+            // Linear interpolation formula
+            EbN0 =
+              EbN0_Array[i] +
+              ((EbN0_Array[i + 1] - EbN0_Array[i]) * (BER - BER_Array[i])) /
+                (BER_Array[i + 1] - BER_Array[i]);
+            break;
+          }
+        }
+
+        document.getElementById("result").innerHTML =
+          "Calculated Eb/N0: " + EbN0.toFixed(1) + " dB";
+        document.getElementById("ebn0").value = EbN0.toFixed(1);
+      }
+
+      function convertToWatt(dBValue) {
+        return Math.pow(10, dBValue / 10);
+      }
+
+      function calculateTransmittedPower() {
+        var temperature = parseFloat(
+          document.getElementById("temperature").value
+        );
+        var bandwidth = parseFloat(document.getElementById("bandwidth").value);
+        var noiseFigure = parseFloat(
+          document.getElementById("noiseFigure").value
+        );
+        var dataRate = parseFloat(document.getElementById("dataRate").value);
+        var ebn0 = parseFloat(document.getElementById("ebn0").value);
+        var pathLoss = parseFloat(document.getElementById("pathLoss").value);
+        var antennaGainTx = parseFloat(
+          document.getElementById("antennaGainTx").value
+        );
+        var antennaGainRx = parseFloat(
+          document.getElementById("antennaGainRx").value
+        );
+        var feedLineLoss = parseFloat(
+          document.getElementById("feedLineLoss").value
+        );
+        var miscLosses = parseFloat(
+          document.getElementById("miscLosses").value
+        );
+        var linkMargin = parseFloat(
+          document.getElementById("linkMargin").value
+        );
+        var amplifierR = parseFloat(
+          document.getElementById("amplifierR").value
+        );
+        var amplifierT = parseFloat(
+          document.getElementById("amplifierT").value
+        );
+
+        var temperatureUnit =
+          document.getElementById("temperatureUnit").checked;
+        var bandwidthUnit = document.getElementById("bandwidthUnit").checked;
+        var noiseFigureUnit =
+          document.getElementById("noiseFigureUnit").checked;
+        var dataRateUnit = document.getElementById("dataRateUnit").checked;
+        var ebn0Unit = document.getElementById("ebn0Unit").checked;
+        var pathLossUnit = document.getElementById("pathLossUnit").checked;
+        var antennaGainTxUnit =
+          document.getElementById("antennaGainTxUnit").checked;
+        var antennaGainRxUnit =
+          document.getElementById("antennaGainRxUnit").checked;
+        var feedLineLossUnit =
+          document.getElementById("feedLineLossUnit").checked;
+        var miscLossesUnit = document.getElementById("miscLossesUnit").checked;
+        var linkMarginUnit = document.getElementById("linkMarginUnit").checked;
+        var amplifierRUnit = document.getElementById("amplifierRUnit").checked;
+        var amplifierTUnit = document.getElementById("amplifierTUnit").checked;
+
+        if (!temperatureUnit) {
+          temperature = 10 * Math.log10(temperature);
+        }
+        if (!bandwidthUnit) {
+          bandwidth = 10 * Math.log10(bandwidth);
+        }
+        if (!noiseFigureUnit) {
+          noiseFigure = 10 * Math.log10(noiseFigure);
+        }
+        if (!dataRateUnit) {
+          dataRate = 10 * Math.log10(dataRate);
+        }
+        if (!ebn0Unit) {
+          ebn0 = 10 * Math.log10(ebn0);
+        }
+        if (!pathLossUnit) {
+          pathLoss = 10 * Math.log10(pathLoss);
+        }
+        if (!antennaGainTxUnit) {
+          antennaGainTx = 10 * Math.log10(antennaGainTx);
+        }
+        if (!antennaGainRxUnit) {
+          antennaGainRx = 10 * Math.log10(antennaGainRx);
+        }
+        if (!feedLineLossUnit) {
+          feedLineLoss = 10 * Math.log10(feedLineLoss);
+        }
+        if (!miscLossesUnit) {
+          miscLosses = 10 * Math.log10(miscLosses);
+        }
+        if (!linkMarginUnit) {
+          linkMargin = 10 * Math.log10(linkMargin);
+        }
+        if (!amplifierRUnit) {
+          amplifierR = 10 * Math.log10(amplifierR);
+        }
+        if (!amplifierTUnit) {
+          amplifierT = 10 * Math.log10(amplifierT);
+        }
+
+        var receivedPower =
+          linkMargin + -228.6 + temperature + noiseFigure + dataRate + ebn0;
+
+        var transmittedPower =
+          receivedPower +
+          pathLoss +
+          feedLineLoss +
+          miscLosses +
+          linkMargin -
+          antennaGainTx -
+          antennaGainRx -
+          amplifierR -
+          amplifierT;
+
+        var transmittedPowerWatt = convertToWatt(transmittedPower);
+
+        document.getElementById("powerResult").innerHTML =
+          "Transmitted Power: " +
+          transmittedPower.toFixed(6) +
+          " dB (" +
+          transmittedPowerWatt.toFixed(6) +
+          " W)";
+      }
+    </script>
+  </head>
+</html>
